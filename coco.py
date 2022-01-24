@@ -6,7 +6,7 @@ from copy_paste import copy_paste_class
 min_keypoints_per_image = 10
 
 def _count_visible_keypoints(anno):
-    return sum(sum(1 for v in ann["keypoints"][2::3] if v > 0) for ann in anno)
+    return sum(sum(v > 0 for v in ann["keypoints"][2::3]) for ann in anno)
 
 def _has_only_empty_bbox(anno):
     return all(any(o <= 1 for o in obj["bbox"][2:]) for obj in anno)
