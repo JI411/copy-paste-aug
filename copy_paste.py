@@ -71,11 +71,7 @@ def bboxes_copy_paste(bboxes, paste_bboxes, masks, paste_masks, alpha, key):
         adjusted_bboxes = [bbox + tail[4:] for bbox, tail in zip(adjusted_bboxes, bboxes)]
 
         #adjust paste_bboxes mask indices to avoid overlap
-        if len(masks) > 0:
-            max_mask_index = len(masks)
-        else:
-            max_mask_index = 0
-
+        max_mask_index = max(len(masks), 0)
         paste_mask_indices = [max_mask_index + ix for ix in range(len(paste_bboxes))]
         paste_bboxes = [pbox[:-1] + (pmi,) for pbox, pmi in zip(paste_bboxes, paste_mask_indices)]
         adjusted_paste_bboxes = extract_bboxes(paste_masks)
@@ -173,8 +169,9 @@ class CopyPaste(A.DualTransform):
 
         #select objects
         objs_to_paste = np.random.choice(
-            range(0, n_objects), size=n_select, replace=False
+            range(n_objects), size=n_select, replace=False
         )
+
 
         #take the bboxes
         if bboxes:
@@ -270,8 +267,11 @@ def copy_paste_class(dataset_class):
                 bbox_params = self.transforms.processors['bboxes'].params
                 paste_additional_targets['paste_bboxes'] = 'bboxes'
                 if self.transforms.processors['bboxes'].params.label_fields:
-                    msg = "Copy-paste does not support bbox label_fields! "
-                    msg += "Expected bbox format is (a, b, c, d, label_field)"
+                    msg = (
+                        "Copy-paste does not support bbox label_fields! "
+                        + "Expected bbox format is (a, b, c, d, label_field)"
+                    )
+
                     raise Exception(msg)
             if 'keypoints' in self.transforms.processors:
                 keypoint_params = self.transforms.processors['keypoints'].params
